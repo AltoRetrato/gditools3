@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 
 """
-    gditools, a python library to extract files, sorttxt.txt and
+    gditools3, a python library to extract files, sorttxt.txt and
     bootsector (ip.bin) from SEGA Gigabyte Disc (GD-ROM) dumps.
 
     FamilyGuy 2014-2015
     Converted to Python 3.x by Ricardo Mendonça Ferreira, 2018
 
-    gditools.py and provided examples are licensed under the GNU
+    gditools3.py and provided examples are licensed under the GNU
     General Public License (version 3), a copy of which is provided
     in the licences folder: GNU_GPL_v3.txt
 
@@ -1017,7 +1017,7 @@ def _copy_buffered(f1, f2, length = None, bufsize = 1*1024*1024, closeOut = True
         f2.close()
 
 
-def _printUsage(pname='gditools.py'):
+def _printUsage(pname='gditools3.py'):
     print("""Usage: {} -i input_gdi [options]
   -h, --help             Display this help
   -l, --list             List all files in the filesystem and exit
