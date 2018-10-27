@@ -7,7 +7,7 @@ This project can be used in standalone mode, in interactive mode or as a library
 
 For your convenience, you can use the gditoolsgui.py.
 
-This project was tested with Python 2.7.x and 3.4.x.
+This project was (barely!) tested with Python 2.7.x and 3.4.x.
 
 See the README.TXT file for more informations.
 
