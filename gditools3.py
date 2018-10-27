@@ -22,6 +22,7 @@ import os
 import sys
 import shutil
 import getopt
+import itertools
 from copy     import deepcopy
 from iso9660  import ISO9660 as _ISO9660_orig
 from struct   import unpack
@@ -29,6 +30,7 @@ from datetime import datetime
 from io       import BytesIO
 
 
+__version__ = "3.0.0"
 
 # TODO TODO TODO
 #
@@ -345,7 +347,8 @@ class ISO9660(_ISO9660_orig):
 
     def get_last_toc_sector(self):
         # Parsing the whole TOC to find the last accessed sector.
-        tmp = map(None, self.tree(), self.tree(get_files=False))
+        #tmp = map(None, self.tree(), self.tree(get_files=False))
+        tmp = list(itertools.zip_longest(self.tree(), self.tree(get_files=False)))
         return self._last_read_toc_sector
 
     def get_first_file_sector(self):
@@ -538,10 +541,10 @@ class OffsetedFile(CdImage):
             data = CdImage.read(self, length)
         elif FutureOffset < self.offset:
             #print('BEFORE OFFSET')
-            data = '\x00'*length
+            data = b'\x00'*length
         else:
             #print('CROSSING OFFSET')
-            preData = '\x00'*(self.offset - tmp)
+            preData = b'\x00'*(self.offset - tmp)
             self.seek(self.offset)
             postData = CdImage.read(self, FutureOffset - self.offset)
             data = preData + postData
@@ -678,14 +681,17 @@ class AppendedFiles():
     def seek(self, a, b=0):
         if b == 0:
             self.MetaPointer = a
-        if b == 1:
+        elif b == 1:
             self.MetaPointer += a
-        if b == 2:
+        elif b == 2:
             self.MetaPointer = self._f1_len + self._f2_len - a
 
         if self.MetaPointer >= self._f1_len:
             self._f1.seek(0, 2)
-            self._f2.seek(a - self._f1_len, 0)
+            try:
+                self._f2.seek(a - self._f1_len, 0)
+            except ValueError:
+                pass
         else:
             self._f1.seek(a, 0)
             self._f2.seek(0, 0)
@@ -1018,7 +1024,10 @@ def _copy_buffered(f1, f2, length = None, bufsize = 1*1024*1024, closeOut = True
 
 
 def _printUsage(pname='gditools3.py'):
-    print("""Usage: {} -i input_gdi [options]
+    print("""
+GDI Tools v. {}
+
+Usage: {} -i input_gdi [options]
   -h, --help             Display this help
   -l, --list             List all files in the filesystem and exit
   -o [outdir]            Output directory. Default: gdi folder
@@ -1041,7 +1050,7 @@ gditools.py  by FamilyGuy, http://sourceforge.net/p/dcisotools/
 
 iso9660.py  by Barney Gale, http://github.com/barneygale
     Licensed under a BSD-based license, see licences folder.
-""".format(pname))
+""".format(__version__, pname))
 
 
 def main(argv):
