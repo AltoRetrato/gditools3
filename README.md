@@ -1,4 +1,6 @@
 # gditools3
+![gditools3](screenshots/screenshot001win.png)
+
 This is a fork of https://sourceforge.net/projects/dcisotools/
 
 This Python program/library is designed to handle GD-ROM image (GDI) files. It can be used to list files, extract data, generate sorttxt file, extract bootstrap (IP.BIN) file and more.
