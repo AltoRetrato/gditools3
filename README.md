@@ -5,9 +5,9 @@ This Python program/library is designed to handle GD-ROM image (GDI) files. It c
 
 This project can be used in standalone mode, in interactive mode or as a library in another Python program (check the 'addons' folder to learn how).
 
-For your convenience, you can use the gditoolsgui.py.
+You can use either the command-line interface (gditools3.py) or the GUI (gditools3gui.py).
 
-This project was (barely!) tested with Python 2.7.x and 3.4.x.
+This project was (barely!) tested with Python 2.7, 3.4 and 3.7.
 
 See the README.TXT file for more informations.
 
