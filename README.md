@@ -1,5 +1,5 @@
 # gditools3
-![gditools3](screenshots/screenshot001win.png)
+![gditools3](screenshots/screenshot001win_small.png)
 
 This is a fork of https://sourceforge.net/projects/dcisotools/
 
