@@ -1,23 +1,27 @@
-                                ___ __              __    
+﻿                                ___ __              __    
                      ____ _____/ (_) /_____  ____  / /____
                     / __ `/ __  / / __/ __ \/ __ \/ / ___/
                    / /_/ / /_/ / / /_/ /_/ / /_/ / (__  ) 
                    \__, /\__,_/_/\__/\____/\____/_/____/  
                   /____/
 
-    gditools3, a Python library to extract files, sorttxt.txt and 
-    bootsector (IP.BIN) from SEGA Gigabyte Disc (GD-ROM) dumps in 
-    gdi format.
+    gditools3 is a Python 3 port of gditools by FamilyGuy, a
+    Python library to extract files, sorttxt.txt and bootsector (IP.BIN)
+    from SEGA Gigabyte Disc (GD-ROM) dumps in gdi format.
 
     The goals is to make it efficient, readable and multi-platform.
 
-    As of 2018.20.15, it's tested & working on Win10 on Python 2.7.4
-    and 3.4.1 on x86_64 processors.
+    As of 2018.11.06, it's (barely) tested & working on Windows 10 
+    and Ubuntu 18.05, Python 2.7, 3.4 and 3.7, on x86_64 processors.
 
-    The performance is typically limited by the usage of a platter HDD.
-    When using a SSD, the CPU can be the bottleneck if it's an old one
-    or if it's used in power-saving mode. 3-tracks gdi can be extracted
-    in less than 2 seconds with the right configuration (~1GiB of data).
+    The performance of the original library was typically limited by
+    the use of a platter HDD. When using a SSD, the CPU can be
+    the bottleneck if it's an old one or if it's used in power-saving mode.
+    3-tracks gdi can be extracted in less than 2 seconds
+    with the right configuration (~1GiB of data).
+
+    Performance of gditools3 with Python 2 is still very good,
+    but not so much on Python 3. I'll try to fix this in the future.
 
     To get the most recent version, visit:
     https://github.com/AltoRetrato/gditools3
@@ -41,7 +45,7 @@
 
     Many thanks to FamilyGuy for sharing his original work!
 
-    Thanks to SiZiOUS for testing the code, providing support
+    Thanks to SiZiOUS for testing FamilyGuy's code, providing support
     and for the original GUI program.
 
      ___                _                        __    
@@ -50,7 +54,7 @@ ___/ , _/ -_) _ `/ // / / __/ -_)  ' \/ -_) _ \/ __(_-<________________________
   /_/|_|\__/\_, /\_,_/_/_/  \__/_/_/_/\__/_//_/\__/___/
              /_/
 			 
-   - Python 2.7.x or Python 3.4.x.
+   - Python 2.7.x or Python 3.4.x (or later).
    - On Windows you have to add the python folder to your path manually (or 
      choose the option when installing).
 
@@ -123,7 +127,10 @@ ___/ /_/ (_-</ / _ \/ _ `/ / __/ _ \/ -_) / (_ / /_/ // /______________________
    \____/___/_/_//_/\_, /  \__/_//_/\__/  \___/\____/___/  
                    /___/                                   
 				   
-    A new, pure Python GUI version is in the works.
+    A pure Python GUI, gditools3gui.py, is available in the folder "gui".
+    It uses the PySimpleGUI package (provided as a single file), a "pythonic"
+    interface to tkinter. The GUI requires Python 3.x and tkinter.
+    
 
       __                 __  ______       ______
      / /  ___ ___ ____ _/ / / __/ /___ __/ _/ _/

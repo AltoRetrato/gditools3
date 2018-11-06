@@ -30,7 +30,7 @@ from datetime import datetime
 from io       import BytesIO
 
 
-__version__ = "3.0.0"
+__version__ = "3.0.1"
 
 # TODO TODO TODO
 #
@@ -147,12 +147,12 @@ class ISO9660(_ISO9660_orig):
         return self._unpack_raw(16*2048)
 
 
-    def get_file_by_record(self, filerec):
+    def get_file_by_record(self, filerec, length=None):
         self._gdifile.seek(filerec['ex_loc']*2048)
-        return self._gdifile.read(filerec['ex_len'])
+        return self._gdifile.read( min(filerec['ex_len'], length or filerec['ex_len']) )
 
-    def get_file(self, filename):
-        return self.get_file_by_record(self.get_record(filename))
+    def get_file(self, filename, length=None):
+        return self.get_file_by_record(self.get_record(filename), length)
 
 
     def get_sorttxt(self, crit='ex_loc', prefix='data', dummy='0.0', spacer=1):
@@ -194,7 +194,7 @@ class ISO9660(_ISO9660_orig):
 
 
     def _sorted_records(self, crit='ex_loc'):
-        file_records = [i for i in self.gen_records()]
+        file_records = list(self.gen_records())
         for i in self.gen_records(get_files = False):
             file_records.pop(file_records.index(i))  # Strips directories
         reverse = crit[0].islower()
@@ -220,8 +220,8 @@ class ISO9660(_ISO9660_orig):
 
 
     def dump_sorttxt(self, filename='sorttxt.txt', **kwargs):
-        if not filename[0] == '/': # Paths rel. to gdi folder unless full paths
-            filename = self._dirname + '/' + filename
+        if not os.path.isabs(filename): # Paths rel. to gdi folder unless full paths
+            filename = os.path.join(self._dirname, filename)
 
         path = os.path.dirname(filename)
         if not os.path.exists(path):
@@ -237,8 +237,8 @@ class ISO9660(_ISO9660_orig):
             f.write(self.get_sorttxt(**kwargs))
 
     def dump_bootsector(self, filename='ip.bin', **kwargs):
-        if not filename[0] == '/': # Paths rel. to gdi folder unless full paths
-            filename = self._dirname + '/' + filename
+        if not os.path.isabs(filename): # Paths rel. to gdi folder unless full paths
+            filename = os.path.join(self._dirname, filename)
 
         path = os.path.dirname(filename)
         if not os.path.exists(path):
@@ -306,8 +306,8 @@ class ISO9660(_ISO9660_orig):
         # target has a default value not to accidentally fill dev folder
         # Sorting according to LBA to avoid too much skipping on HDDs
 
-        if not target[0] == '/': # Paths rel. to gdi folder unless full paths
-            target = self._dirname + '/' + target
+        if not os.path.isabs(target): # Paths rel. to gdi folder unless full paths
+            target = os.path.join(self._dirname, target)
         try:
             for i in self._sorted_records(crit='EX_LOC'):
                 self.dump_file_by_record(i, target = target, **kwargs)
@@ -929,7 +929,7 @@ def getDummyDataTrack():
 
 def parse_gdi(filename, verbose=False):
     filename = os.path.realpath(filename)
-    dirname = os.path.dirname(filename)
+    dirname  = os.path.dirname(filename)
 
     with open(filename) as f: # if i.split() removes blank lines
         l = [i.split() for i in f.readlines() if i.split()]
@@ -1025,7 +1025,7 @@ def _copy_buffered(f1, f2, length = None, bufsize = 1*1024*1024, closeOut = True
 
 def _printUsage(pname='gditools3.py'):
     print("""
-GDI Tools v. {}
+GDI Tools 3 v. {}
 
 Usage: {} -i input_gdi [options]
   -h, --help             Display this help
@@ -1043,9 +1043,11 @@ Usage: {} -i input_gdi [options]
   [no option]            Display gdi infos if not silent
 
 
-gditools.py  by FamilyGuy, http://sourceforge.net/p/dcisotools/
-             Python 3 port by Ricardo Mendonça Ferreira, 
-             https://github.com/AltoRetrato/gditools3
+gditools3.py  by Ricardo Mendonça Ferreira
+              https://github.com/AltoRetrato/gditools3
+              is a Python 3 port of FamilyGuy's gditools.py
+              http://sourceforge.net/p/dcisotools/
+
     Licensed under GPLv3, see licences folder.
 
 iso9660.py  by Barney Gale, http://github.com/barneygale
@@ -1078,22 +1080,14 @@ def main(argv):
 
     options = [o[0] for o in opts]
 
-    if not '-i' in options:
-        _printUsage(progname)
-        sys.exit()
+    if (   '-i' not in options
+        or '-h'     in options
+        or '--help' in options):
+            _printUsage(progname)
+            sys.exit()
 
-    if '-h' in options:
-        _printUsage(progname)
-        sys.exit()
-
-    if '--help' in options:
-        _printUsage(progname)
-        sys.exit()
-
-    if '-l' in options:
-        listFiles = True
-
-    if '--list' in options:
+    if (   '-l'     in options
+        or '--list' in options):
         listFiles = True
 
     for opt, arg in opts:
@@ -1124,9 +1118,6 @@ def main(argv):
             sys.exit()
 
         if outputpath:
-            if outputpath[-1] == '/':
-                outputpath = outputpath[:-1]
-
             gdi._dirname = os.path.abspath(outputpath)
 
             if not os.path.exists(gdi._dirname):
