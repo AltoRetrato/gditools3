@@ -862,7 +862,7 @@ def gen_new_gdifile(_tracks):
                 fname=os.path.basename(t['filename']),
                 zero=0,
                 **t)
-    return s
+    return s.encode('UTF-8')
 
 
 def get_total_gdi_dumpsize(filename):
@@ -916,7 +916,7 @@ def erase_backup(bakfiles, verbose=False):
 
 
 def getDummyAudioTrack():
-    return '\x00'*300*2352
+    return b'\x00'*300*2352
 
 def getDummyDataTrack():
     from zlib import decompress
@@ -946,7 +946,7 @@ def parse_gdi(filename, verbose=False):
     gdi[2]['wormhole'] = [0, 45000*2048, 32*2048]
 
     if nbt > 3:
-        gdi[nbt-1]['offset'] = 2048*(gdi[nbt-1]['lba'] - get_filesize(gdi[2]['filename'])/gdi[2]['mode'] - 45000)
+        gdi[nbt-1]['offset'] = 2048*(gdi[nbt-1]['lba'] - get_filesize(gdi[2]['filename'])//gdi[2]['mode'] - 45000)
 
     if verbose:
         print('\nParsed gdi file: {}'.format(os.path.basename(filename)))
@@ -1030,6 +1030,7 @@ GDI Tools 3 v. {}
 Usage: {} -i input_gdi [options]
   -h, --help             Display this help
   -l, --list             List all files in the filesystem and exit
+  -S, --shrink           Create a shrunk copy of the gdi
   -o [outdir]            Output directory. Default: gdi folder
   -s [filename]          Create a sorttxt file with custom name
                            (It uses *data-folder* as prefix)
@@ -1067,10 +1068,11 @@ def main(argv):
     silent = False
     datafolder = 'data'
     listFiles = False
+    gdiShrink = False
     sort_spacer = 1
     try:
-        opts, args = getopt.getopt(argv,"hli:o:s:b:e:",
-                                   ['help','silent', 'list',
+        opts, args = getopt.getopt(argv,"hli:S:o:s:b:e:",
+                                   ['help','silent', 'list', 'shrink',
                                     'extract-all','data-folder=',
                                     'sort-spacer='])
 
@@ -1089,6 +1091,10 @@ def main(argv):
     if (   '-l'     in options
         or '--list' in options):
         listFiles = True
+
+    if (   '-S'       in options
+        or '--shrink' in options):
+        gdiShrink = True
 
     for opt, arg in opts:
         if opt == '-i':
@@ -1110,37 +1116,39 @@ def main(argv):
         elif opt == '--sort-spacer':
             sort_spacer = arg
 
+    if gdiShrink:
+        gdishrink(inputfile, odir=outputpath)
+    else:
+        with GDIfile(inputfile, verbose = not silent) as gdi:
+            if listFiles:
+                print('Listing all files in the filesystem:\n')
+                gdi.print_files()
+                sys.exit()
 
-    with GDIfile(inputfile, verbose = not silent) as gdi:
-        if listFiles:
-            print('Listing all files in the filesystem:\n')
-            gdi.print_files()
-            sys.exit()
+            if outputpath:
+                gdi._dirname = os.path.abspath(outputpath)
 
-        if outputpath:
-            gdi._dirname = os.path.abspath(outputpath)
+                if not os.path.exists(gdi._dirname):
+                    os.makedirs(gdi._dirname)
+                    if not silent:
+                        tmp_str = 'Created directory: {}'.format(gdi._dirname)
+                        print(tmp_str + ' '*(80-len(tmp_str)))
 
-            if not os.path.exists(gdi._dirname):
-                os.makedirs(gdi._dirname)
-                if not silent:
-                    tmp_str = 'Created directory: {}'.format(gdi._dirname)
-                    print(tmp_str + ' '*(80-len(tmp_str)))
+            if datafolder == '__volume_label__':
+                datafolder = gdi.get_volume_label()
 
-        if datafolder == '__volume_label__':
-            datafolder = gdi.get_volume_label()
+            if sorttxtfile:
+                gdi.dump_sorttxt(filename=sorttxtfile, prefix=datafolder, spacer = sort_spacer)
 
-        if sorttxtfile:
-            gdi.dump_sorttxt(filename=sorttxtfile, prefix=datafolder, spacer = sort_spacer)
+            if bootsectorfile:
+                gdi.dump_bootsector(filename=bootsectorfile)
 
-        if bootsectorfile:
-            gdi.dump_bootsector(filename=bootsectorfile)
-
-        if extract:
-            if extract.lower() in ['__all__']:
-                if not silent: print('\nDumping all files:')
-                gdi.dump_all_files(target=datafolder)
-            else:
-                gdi.dump_file(extract, target=gdi._dirname)
+            if extract:
+                if extract.lower() in ['__all__']:
+                    if not silent: print('\nDumping all files:')
+                    gdi.dump_all_files(target=datafolder)
+                else:
+                    gdi.dump_file(extract, target=gdi._dirname)
 
 
 if __name__ == '__main__':
