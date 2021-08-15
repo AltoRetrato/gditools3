@@ -815,7 +815,7 @@ def gdishrink(filename, odir=None, erase_bak=False, verbose=True):
         ofile.write(getDummyAudioTrack())
     # Moving the HD-area audio tracks too if they exist
     if numtraks > 3:
-        for iat, oat in zip(itracks, otracks)[3:-1]:    # Only the 2de session audio tracks
+        for iat, oat in list(zip(itracks, otracks))[3:-1]:    # Only the 2de session audio tracks
             if not os.path.isfile(oat['filename']):
                 shutil.copy2(iat['filename'], oat['filename'])
 
